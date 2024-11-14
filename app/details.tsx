@@ -1,17 +1,29 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import  Auth  from 'app/(auth)/Auth';
+import { createClient, Session } from '@supabase/supabase-js'
+import { supabase } from '~/utils/supabase';
+import { Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Container } from '~/components/Container';
-import { ScreenContent } from '~/components/ScreenContent';
 
 export default function Details() {
-  const { name } = useLocalSearchParams();
+     const [session, setSession] = useState<Session | null>(null)
+
+    useEffect(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session)
+      })
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        setSession(session)
+      })
+  }, [])
 
   return (
-    <>
-      <Stack.Screen options={{ title: 'Details' }} />
-      <Container>
-        <ScreenContent path="screens/details.tsx" title={`Showing details for user ${name}`} />
-      </Container>
-    </>
-  );
+    <SafeAreaView>
+      <Auth/>
+      {session && session.user && <Text>{session.user.id}</Text>}
+    </SafeAreaView>
+  )
 }
